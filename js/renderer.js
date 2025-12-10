@@ -44,6 +44,43 @@ export function renderTextLayers(els) {
 
         els.textLayerContainer.appendChild(el);
     });
+
+    // Render Images
+    if (state.images) {
+        state.images.forEach(img => {
+            const el = document.createElement('div');
+            el.id = img.id;
+            el.className = 'image-layer';
+            el.style.position = 'absolute';
+            el.style.left = img.x + 'px';
+            el.style.top = img.y + 'px';
+            el.style.width = img.width + 'px';
+            el.style.height = img.height + 'px';
+            el.style.backgroundImage = `url(${img.src})`;
+            el.style.backgroundSize = 'cover';
+            el.style.cursor = 'move';
+            el.style.userSelect = 'none'; // Prevent browser native drag
+
+            if (state.selectedId === img.id) el.classList.add('selected');
+
+            el.addEventListener('mousedown', (e) => startDrag(e, img.id, els));
+
+            // Gizmo for Image
+            if (state.selectedId === img.id) {
+                el.style.outline = '1px solid #BFC7FF';
+                ['tl', 'tr', 'bl', 'br'].forEach(pos => {
+                    const h = document.createElement('div');
+                    h.className = `gizmo-handle handle-${pos}`;
+                    h.addEventListener('mousedown', (e) => startResize(e, img.id, pos, els));
+                    el.appendChild(h);
+                });
+
+                // Add delete button?
+            }
+
+            els.textLayerContainer.appendChild(el);
+        });
+    }
 }
 
 export function renderLayersList(els, selectText) {
@@ -102,6 +139,10 @@ export function updatePreview(els) {
     const g2 = `radial-gradient(circle at 15% 80%, ${hexToRgba(state.background.c2, 0.6)} 0%, ${hexToRgba(state.background.c2, 0)} 50%)`;
 
     els.preview.style.backgroundImage = `${g1}, ${g2}`;
+
+    // Texture
+    const tex = document.getElementById('textureOverlay');
+    if (tex) tex.style.display = state.texture ? 'block' : 'none';
 
     // Re-scale if needed
     scaleCardToFit(els);

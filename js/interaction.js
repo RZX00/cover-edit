@@ -75,8 +75,14 @@ export function startDrag(e, id, els) {
 function onDrag(e) {
     if (!isDragging || !currentDragId) return;
 
-    const t = state.texts.find(x => x.id === currentDragId);
+    // Find in texts OR images
+    let t = state.texts.find(x => x.id === currentDragId);
+    const isImage = !t;
+    if (!t) t = state.images.find(x => x.id === currentDragId);
+
     if (!t) return;
+
+    // if(isImage) { ... specific logic? No, x/y is same }
 
     const parentRect = elsRef.textLayerContainer.getBoundingClientRect();
     const scale = getCurrentScale(elsRef);
@@ -233,7 +239,17 @@ export function startResize(e, id, handle, els) {
     const t = state.texts.find(x => x.id === id);
     resizeStart.x = e.clientX;
     resizeStart.y = e.clientY;
-    resizeStart.fontSize = t.fontSize;
+    resizeStart.fontSize = t ? t.fontSize : 0;
+    if (!t) {
+        // Image support
+        const img = state.images.find(x => x.id === id);
+        if (img) {
+            resizeStart.w = img.width;
+            resizeStart.h = img.height;
+            resizeStart.xPos = img.x;
+            resizeStart.yPos = img.y;
+        }
+    }
 
     window.addEventListener('mousemove', onResize);
     window.addEventListener('mouseup', endResize);
@@ -241,23 +257,84 @@ export function startResize(e, id, handle, els) {
 
 function onResize(e) {
     if (!isResizing || !currentResizeId) return;
-    const t = state.texts.find(x => x.id === currentResizeId);
+
+    let target = state.texts.find(x => x.id === currentResizeId);
+    let isImage = false;
+    if (!target) {
+        target = state.images.find(x => x.id === currentResizeId);
+        isImage = true;
+    }
+    if (!target) return;
 
     const scale = getCurrentScale(elsRef);
     const dx = (e.clientX - resizeStart.x) / scale;
     const dy = (e.clientY - resizeStart.y) / scale;
 
-    let delta = 0;
-    if (resizeHandle.includes('b')) delta = dy;
-    else delta = -dy;
+    if (isImage) {
+        // Image Resize Logic
+        // Locked aspect ratio? For now simple free resize or locked. Let's do free for MVP or lock if corners.
+        // Usually corner resize locks aspect on shift, but web tools often just resize w/h.
+        // Let's implement simple corner resize updating width/height.
 
-    const newSize = Math.max(8, resizeStart.fontSize + delta);
-    t.fontSize = Math.round(newSize);
+        let newW = target.width;
+        let newH = target.height;
 
-    const el = document.getElementById(currentResizeId);
-    if (el) el.style.fontSize = t.fontSize + 'px';
+        // Determine direction based on handle
+        if (resizeHandle.includes('r')) newW = Math.max(20, resizeStart.w + dx);
+        if (resizeHandle.includes('l')) newW = Math.max(20, resizeStart.w - dx); // logic might need offset adjustment in startResize if we want correct anchor
+        if (resizeHandle.includes('b')) newH = Math.max(20, resizeStart.h + dy);
+        if (resizeHandle.includes('t')) newH = Math.max(20, resizeStart.h - dy);
 
-    if (elsRef.propSize) elsRef.propSize.value = t.fontSize;
+        // Simplification: Standard Gizmo usually requires updating x/y for top/left handles. 
+        // For MVP V2, let's just support Bottom-Right resize to keep math simple, OR just update w/y correctly.
+
+        // Let's stick to simple "delta affects size"
+        // If handle is 'br', dx adds to width, dy adds to height.
+        if (resizeHandle === 'br') {
+            target.width = Math.max(20, resizeStart.w + dx);
+            target.height = Math.max(20, resizeStart.h + dy);
+        } else if (resizeHandle === 'bl') {
+            // Change width and X
+            // Too complex for single function patch? 
+            // Let's just allow BR resizing for images for now or crude implementation.
+            // Actually, let's simply map dx/dy to size.
+            target.width = Math.max(20, resizeStart.w + (resizeHandle.includes('l') ? -dx : dx));
+            target.height = Math.max(20, resizeStart.h + (resizeHandle.includes('t') ? -dy : dy));
+
+            // If we change Left, we must change X.
+            if (resizeHandle.includes('l')) target.x = resizeStart.xPos + dx;
+            // If Top, change Y.
+            if (resizeHandle.includes('t')) target.y = resizeStart.yPos + dy;
+        } else {
+            // other handles
+            target.width = Math.max(20, resizeStart.w + (resizeHandle.includes('l') ? -dx : dx));
+            target.height = Math.max(20, resizeStart.h + (resizeHandle.includes('t') ? -dy : dy));
+            if (resizeHandle.includes('l')) target.x = resizeStart.xPos + dx;
+            if (resizeHandle.includes('t')) target.y = resizeStart.yPos + dy;
+        }
+
+        const el = document.getElementById(currentResizeId);
+        if (el) {
+            el.style.width = target.width + 'px';
+            el.style.height = target.height + 'px';
+            el.style.left = target.x + 'px';
+            el.style.top = target.y + 'px';
+        }
+
+    } else {
+        // Text Resize Logic (Font Size)
+        let delta = 0;
+        if (resizeHandle.includes('b')) delta = dy;
+        else delta = -dy;
+
+        const newSize = Math.max(8, resizeStart.fontSize + delta);
+        target.fontSize = Math.round(newSize);
+
+        const el = document.getElementById(currentResizeId);
+        if (el) el.style.fontSize = target.fontSize + 'px';
+
+        if (elsRef.propSize) elsRef.propSize.value = target.fontSize;
+    }
 }
 
 function endResize() {

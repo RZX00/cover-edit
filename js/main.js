@@ -1,4 +1,4 @@
-import { state, loadState, saveState, presets, defaultBgPresets, availableFonts } from './store.js';
+import { state, loadState, saveState, presets, defaultBgPresets, availableFonts, styleTemplates, defaultTexts } from './store.js';
 import { setRandomGradient } from './utils.js';
 import { renderTextLayers, renderLayersList, updatePreview, scaleCardToFit } from './renderer.js';
 import { exportPngSimple, downloadSVGFile } from './export.js';
@@ -19,6 +19,7 @@ function init() {
 
     els.layersList = document.getElementById('layersList');
     els.btnAddText = document.getElementById('btnAddText');
+    els.imgUpload = document.getElementById('imgUpload'); // New
 
     els.propsPanel = document.getElementById('propsPanel');
     els.propText = document.getElementById('propText');
@@ -34,9 +35,10 @@ function init() {
     els.curSize = document.getElementById('curSize');
 
     els.presetsCommon = document.getElementById('presetsCommon');
-    els.presetsMore = document.getElementById('presetsMore');
-    els.toggleMore = document.getElementById('toggleMorePresets');
-    els.moreContainer = document.getElementById('morePresetsContainer');
+    els.presetsCommon = document.getElementById('presetsCommon');
+    // els.presetsMore removed
+    // els.toggleMore removed
+    // els.moreContainer removed
 
     els.btnApply = document.getElementById('applySize');
     els.btnJpg = document.getElementById('downloadJpg');
@@ -49,6 +51,14 @@ function init() {
 
     // Load State
     loadState(els);
+
+    // If state is empty (no texts, no images), load defaults
+    if (state.texts.length === 0 && (state.images ? state.images.length === 0 : true)) { // Added check for state.images existence
+        // Deep copy defaults
+        state.texts = JSON.parse(JSON.stringify(defaultTexts));
+        saveState(els);
+    }
+
     syncStateToInputs();
 
     // Render Initials
@@ -57,6 +67,7 @@ function init() {
     renderTextLayers(els);
     renderLayersList(els, selectText);
     renderBgPresets();
+    renderStyleTemplates(); // New
     setupFontPicker(); // Init Font Picker
     updatePreview(els);
 
@@ -89,6 +100,25 @@ function setupListeners() {
     els.btnAddText.addEventListener('click', addTextLayer);
     els.btnDeleteText.addEventListener('click', deleteSelectedText);
 
+    // Reset Button
+    const btnReset = document.getElementById('btnReset');
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            if (confirm('Reset canvas to default?')) {
+                state.texts = JSON.parse(JSON.stringify(defaultTexts));
+                state.images = [];
+                state.background = { c1: '#dbeafe', c2: '#f3e8ff', c3: '#f8f9fa', texture: false };
+                renderTextLayers(els);
+                updatePreview(els);
+                saveState(els);
+                // Also reset inputs
+                if (els.c1) els.c1.value = state.background.c1;
+                if (els.c2) els.c2.value = state.background.c2;
+                if (els.c3) els.c3.value = state.background.c3;
+            }
+        });
+    }
+
     els.btnApply.addEventListener('click', () => updatePreview(els));
     // Toggle removed as requested
     /*
@@ -107,9 +137,33 @@ function setupListeners() {
 
     if (els.btnSaveBg) els.btnSaveBg.addEventListener('click', saveBgPreset);
 
+    // Texture Toggle
+    const texToggle = document.getElementById('textureToggle');
+    if (texToggle) {
+        texToggle.checked = state.texture;
+        texToggle.addEventListener('change', (e) => {
+            state.texture = e.target.checked;
+            updatePreview(els);
+            saveState(els);
+        });
+    }
+
     els.btnJpg.addEventListener('click', () => exportPngSimple(els, 'jpeg'));
     els.btnPng.addEventListener('click', () => exportPngSimple(els, 'png'));
     els.btnSvg.addEventListener('click', () => downloadSVGFile(els));
+
+    if (els.imgUpload) {
+        els.imgUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                addImageLayer(evt.target.result);
+                e.target.value = ''; // Reset
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
     // Canvas Double Click -> New Text
     els.preview.addEventListener('dblclick', (e) => {
@@ -184,6 +238,9 @@ function addTextLayer(x, y) {
 function deleteSelectedText() {
     if (!state.selectedId) return;
     state.texts = state.texts.filter(t => t.id !== state.selectedId);
+    // Image delete
+    if (state.images) state.images = state.images.filter(i => i.id !== state.selectedId);
+
     state.selectedId = null;
     renderTextLayers(els);
     renderLayersList(els, selectText);
@@ -232,7 +289,7 @@ function renderBgPresets() {
     state.bgPresets.forEach((p, idx) => {
         const btn = document.createElement('div');
         btn.className = 'color-preset';
-        btn.style.background = `linear-gradient(135deg, ${p.c1}, ${p.c3})`;
+        btn.style.background = `linear - gradient(135deg, ${p.c1}, ${p.c3})`;
         btn.title = p.name;
         btn.onclick = () => {
             els.c1.value = p.c1;
@@ -268,6 +325,37 @@ function saveBgPreset() {
     state.bgPresets.push(newPreset);
     renderBgPresets();
     saveState(els);
+}
+
+function addImageLayer(src) {
+    const newId = 'img' + Date.now();
+
+    // Create an image object to get natural dimensions
+    const img = new Image();
+    img.onload = () => {
+        // Limit max initial size
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        if (w > 300) {
+            h = (300 / w) * h;
+            w = 300;
+        }
+
+        state.images.push({
+            id: newId,
+            src: src,
+            x: 50,
+            y: 50,
+            width: Math.round(w),
+            height: Math.round(h),
+            type: 'image'
+        });
+        // Select it
+        state.selectedId = newId;
+        renderTextLayers(els); // We will update this function to also render images
+        saveState(els);
+    };
+    img.src = src;
 }
 
 // Font Picker Logic
@@ -348,6 +436,64 @@ function setupFontPicker() {
             }
         }
     });
+}
+
+
+
+function renderStyleTemplates() {
+    const container = document.getElementById('styleTemplates');
+    if (!container) return;
+
+    container.innerHTML = '';
+    styleTemplates.forEach(tmpl => {
+        const btn = document.createElement('div');
+        btn.className = 'preset'; // Reuse preset style
+        btn.style.textAlign = 'center';
+        btn.style.height = '40px';
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.background = `linear - gradient(135deg, ${tmpl.c1}, ${tmpl.c3})`;
+        // If background is dark, text white, else black
+        // Simple heuristic
+        btn.style.color = tmpl.c1.startsWith('#0') || tmpl.c1.startsWith('#1') ? 'white' : 'black';
+        btn.style.border = '1px solid rgba(0,0,0,0.1)';
+        btn.textContent = tmpl.name;
+
+        btn.onclick = () => applyStyleTemplate(tmpl);
+        container.appendChild(btn);
+    });
+}
+
+function applyStyleTemplate(tmpl) {
+    // Apply Background
+    state.background.c1 = tmpl.c1;
+    state.background.c2 = tmpl.c2;
+    state.background.c3 = tmpl.c3;
+    state.texture = tmpl.texture;
+
+    // Update inputs
+    if (els.c1) els.c1.value = tmpl.c1;
+    if (els.c2) els.c2.value = tmpl.c2;
+    if (els.c3) els.c3.value = tmpl.c3;
+    const texToggle = document.getElementById('textureToggle');
+    if (texToggle) texToggle.checked = tmpl.texture;
+
+    // Apply Fonts (Smartly map to first 3 text layers if exist)
+    if (tmpl.fonts && state.texts.length > 0) {
+        state.texts.forEach((t, i) => {
+            const style = tmpl.fonts[Math.min(i, tmpl.fonts.length - 1)];
+            if (style) {
+                if (style.font) t.fontFamily = style.font;
+                if (style.weight) t.fontWeight = style.weight;
+                if (style.color) t.color = style.color;
+            }
+        });
+    }
+
+    renderTextLayers(els);
+    updatePreview(els);
+    saveState(els);
 }
 
 // Start

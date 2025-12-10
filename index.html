@@ -29,7 +29,11 @@
                 <!-- TEXT LAYERS SECTION -->
                 <div class="row" style="justify-content:space-between; margin-bottom:8px">
                     <div class="label">Text Layers</div>
-                    <button id="btnAddText" class="btn small-btn">+ Add Text</button>
+                    <div style="display:flex; gap:4px">
+                        <button id="btnReset" class="btn small-btn" style="padding:4px 8px; font-size:11px"
+                            title="Reset to Defaults">↺</button>
+                        <button id="btnAddText" class="btn small-btn">+ Add Text</button>
+                    </div>
                 </div>
 
                 <div id="layersList" class="layers-list">
@@ -89,6 +93,19 @@
                     <button id="btnDeleteText" class="btn small-btn"
                         style="width:100%; margin-top:12px; color:#ef4444; border-color:rgba(239, 68, 68, 0.3)">Delete
                         Layer</button>
+                </div> <!-- End propsPanel -->
+
+                <!-- Image Layers Section -->
+                <div class="row" style="margin-top:24px; justify-content:space-between">
+                    <div class="label" style="margin:0">Images</div>
+                    <label class="btn primary small-btn" style="cursor:pointer">
+                        + Add Image
+                        <input type="file" id="imgUpload" accept="image/*" style="display:none">
+                    </label>
+                </div>
+                <!-- Reuse layers list style or create new container if needed, but for now we put images directly on canvas -->
+                <div id="imageLayersList" class="layers-list" style="margin-top:8px; display:none;">
+                    <!-- populated if we want to list them -->
                 </div>
 
                 <hr style="border:none; border-top:1px solid rgba(0,0,0,0.05); width:100%; margin:16px 0">
@@ -105,8 +122,16 @@
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
                         <div class="label" style="margin:0">Presets</div>
-                        <button id="btnSaveBg" class="btn small-btn" style="padding:2px 8px; font-size:11px">+ Save
-                            Current</button>
+                        <div class="row" style="margin-top:12px; justify-content:space-between">
+                            <button id="btnSaveBg" class="btn small-btn" style="flex:1">+ Save Current</button>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="label" style="margin:0">Grain</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="textureToggle">
+                                    <span class="slider-round"></span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <div id="bgPresets" style="display:flex; gap:6px; flex-wrap:wrap">
                         <!-- BG Presets -->
@@ -124,9 +149,10 @@
             </div>
 
             <div class="preview-stage">
-                <div id="preview" class="card-preview">
-                    <div id="textLayerContainer" style="position:absolute; inset:0; pointer-events:none">
-                        <!-- Dynamic texts render here -->
+                <div class="card-preview" id="preview">
+                    <div id="textureOverlay" class="texture-overlay"></div>
+                    <div id="textLayerContainer" style="position:absolute; top:0; left:0; width:100%; height:100%">
+                        <!-- Text Layers Rendered Here -->
                     </div>
                 </div>
             </div>

@@ -7,9 +7,12 @@ export const state = {
     background: {
         c1: '#dbeafe',
         c2: '#f3e8ff',
+        c2: '#f3e8ff',
         c3: '#f8f9fa'
     },
+    texture: false, // New
     texts: [],
+    images: [],
     selectedId: null,
     bgPresets: []
 };
@@ -37,8 +40,43 @@ export const availableFonts = [
     { name: 'Dancing Script', value: "'Dancing Script', cursive" },
     { name: 'Lobster', value: "'Lobster', cursive" },
     { name: 'Pacifico', value: "'Pacifico', cursive" },
+    { name: 'Lobster', value: "'Lobster', cursive" },
+    { name: 'Pacifico', value: "'Pacifico', cursive" },
     { name: 'Monospace', value: 'monospace' },
     { name: 'System UI', value: 'system-ui, sans-serif' }
+];
+
+export const styleTemplates = [
+    {
+        name: 'Tech Minimal',
+        c1: '#0f172a', c2: '#1e293b', c3: '#020617',
+        texture: true,
+        fonts: [
+            { id: 't1', font: 'Inter, sans-serif', weight: 400, color: '#94a3b8' },
+            { id: 't2', font: 'Inter, sans-serif', weight: 700, color: '#ffffff' },
+            { id: 't3', font: 'monospace', weight: 400, color: '#38bdf8' }
+        ]
+    },
+    {
+        name: 'Elegant',
+        c1: '#fdf4ff', c2: '#fae8ff', c3: '#ffffff',
+        texture: true,
+        fonts: [
+            { id: 't1', font: "'Playfair Display', serif", weight: 400, color: '#701a75' },
+            { id: 't2', font: "'Playfair Display', serif", weight: 600, color: '#4a044e' },
+            { id: 't3', font: "'Playfair Display', serif", weight: 400, color: '#a21caf' }
+        ]
+    },
+    {
+        name: 'Pop Bold',
+        c1: '#bef264', c2: '#fde047', c3: '#ffffff',
+        texture: false,
+        fonts: [
+            { id: 't1', font: "'Oswald', sans-serif", weight: 700, color: '#000000' },
+            { id: 't2', font: "'Oswald', sans-serif", weight: 700, color: '#000000' },
+            { id: 't3', font: "'Oswald', sans-serif", weight: 500, color: '#000000' }
+        ]
+    }
 ];
 
 export const presets = [
@@ -69,7 +107,9 @@ export function loadState(els) {
             state.padding = parsed.padding || state.padding;
             state.radius = parsed.radius || state.radius;
             if (parsed.background) state.background = parsed.background;
+            if (parsed.background) state.background = parsed.background;
             if (parsed.texts) state.texts = parsed.texts;
+            if (parsed.images) state.images = parsed.images;
             if (parsed.bgPresets) state.bgPresets = parsed.bgPresets;
         }
     } catch (e) {
