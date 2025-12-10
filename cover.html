@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cover Editor — GPT-5 vs Claude Opus 4.1</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ui-bg: #f8fafc;
+  --panel-bg: rgba(255,255,255,0.8);
+  --muted: rgba(71,85,105,0.7);
+  --glass: rgba(255,255,255,0.6);
+  --accent: linear-gradient(90deg,#F6CCD9 42%, #D6D9FF 100%);
+  --radius: 12px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,#f1f5f9 0%, #e2e8f0 100%);color:#334155;overflow:hidden}
+.container{width:100vw;height:100vh;margin:0;padding:12px;display:grid;grid-template-columns:1fr 380px;gap:16px;box-sizing:border-box}
+.card-panel{background:var(--panel-bg);border-radius:14px;padding:18px;backdrop-filter: blur(6px);box-shadow: 0 6px 20px rgba(0,0,0,0.1)}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#FDB3C8,#BFC7FF);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0c1630}
+.title{font-size:16px;font-weight:600}
+.small{font-size:12px;color:var(--muted)}
+.controls{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;align-items:center}
+.btn{background:transparent;border:1px solid rgba(71,85,105,0.2);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,#F6CCD9 0%, #D6D9FF 100%);color:#081226;border:none;font-weight:600}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.preset{padding:8px 10px;border-radius:8px;background:var(--glass);font-size:13px;cursor:pointer;border:1px solid rgba(71,85,105,0.15)}
+.input, textarea, select{background:rgba(255,255,255,0.8);border:1px solid rgba(71,85,105,0.2);padding:8px 10px;border-radius:8px;color:inherit;width:100%}
+.label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.slider{width:100%}
+.preview-wrap{display:flex;flex-direction:column;gap:12px;height:100%;overflow:hidden}
+.preview-stage{display:flex;align-items:center;justify-content:center;padding:16px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.3));flex:1;width:100%;overflow:hidden}
+.card-preview{max-width:100%;max-height:100%;border-radius:22px;overflow:hidden;box-shadow:0 10px 30px rgba(10,18,32,0.06);background-image:radial-gradient(circle at 85% 20%, hsla(220, 100%, 85%, 0.7) 0%, transparent 40%), radial-gradient(circle at 15% 80%, hsla(320, 100%, 90%, 0.6) 0%, transparent 50%);background-color:#f8f9fa;padding:36px 48px;display:flex;flex-direction:column;justify-content:center;position:relative;color:#0A1220;box-sizing:border-box}
+.top-badge{position:absolute;left:28px;top:20px;font-size:13px;letter-spacing:0.6px;font-weight:500;color:rgba(10,18,32,0.72)}
+.title-text{font-size:64px;line-height:0.95;font-weight:600;font-family:Inter,system-ui;color:#0A1220}
+.subtitle-text{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-size:44px;margin-top:6px;color:#0A1220}
+.small-preview{font-size:12px;color:var(--muted)}
+.controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.notice{font-size:12px;color:var(--muted)}
+.downloads{display:flex;gap:8px}
+.switch{display:inline-flex;align-items:center;gap:8px}
+.color-input{width:44px;height:36px;border-radius:8px;border:none;padding:4px}
+.radio{display:flex;gap:8px;align-items:center}
+.small-btn{padding:6px 8px;font-size:13px;border-radius:8px}
+/* responsive */
+@media (max-width:1200px){
+  .container{grid-template-columns:1fr;padding:10px;gap:12px}
+  .card-preview{padding:32px 40px}
+}
+@media (max-width:768px){
+  .container{padding:8px;gap:10px}
+  .card-preview{padding:24px 32px}
+  .preview-stage{padding:12px}
+}
+@media (max-width:640px){
+  .container{padding:6px;gap:8px}
+  .card-preview{padding:20px 24px}
+  .title-text{font-size:48px}
+  .subtitle-text{font-size:32px}
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- 预览区域 - 现在在左侧 -->
+    <div class="card-panel preview-wrap">
+      <div class="label">Preview</div>
+      <div class="preview-stage">
+        <div id="preview" class="card-preview" role="img" aria-label="封面预览">
+          <div class="top-badge" id="previewTop">Mixture of Experts | Ep. 67.1</div>
+          <div style="height:10px"></div>
+          <div>
+            <div class="title-text" id="previewTitle">GPT-5 vs. Claude Opus 4.1</div>
+            <div class="subtitle-text" id="previewSubtitle">live demo</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="notice">尺寸：<span id="curSize">980 × 320 px</span></div>
+        <div class="downloads">
+          <button id="downloadPngBtn" class="btn small-btn">下载 PNG (示意)</button>
+          <button id="downloadSvgBtn" class="btn small-btn">导出 SVG</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 编辑面板 - 现在在右侧 -->
+    <div class="card-panel">
+      <div class="header">
+        <div class="logo">G</div>
+        <div>
+          <div class="title">Cover Editor</div>
+          <div class="small">Elegant · Linear · High-res export</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div>
+          <div class="label">预设尺寸</div>
+          <div class="presets" id="presets"></div>
+        </div>
+
+        <div class="controls-grid">
+          <div>
+            <div class="label">宽度（px）</div>
+            <input id="widthInput" class="input" type="number" min="100" value="980">
+          </div>
+          <div>
+            <div class="label">高度（px）</div>
+            <input id="heightInput" class="input" type="number" min="100" value="320">
+          </div>
+        </div>
+
+        <div>
+          <div class="label">文本内容</div>
+          <input id="topLabel" class="input" placeholder="顶部小字（例如：Mixture of Experts | Ep. 67.1）" value="Mixture of Experts | Ep. 67.1">
+          <input id="titleText" class="input" placeholder="主标题" style="margin-top:8px" value="GPT-5 vs. Claude Opus 4.1">
+          <input id="subtitleText" class="input" placeholder="副标题（斜体）" style="margin-top:8px" value="live demo">
+        </div>
+
+        <div class="row">
+          <div style="flex:1">
+            <div class="label">圆角（px）</div>
+            <input id="radiusInput" type="range" min="0" max="80" value="22" class="slider">
+          </div>
+          <div style="width:84px;text-align:right">
+            <div class="label">导出质量</div>
+            <select id="scaleSelect" class="input" style="width:100%">
+              <option value="1">1× (原寸)</option>
+              <option value="2" selected>2× (高清)</option>
+              <option value="3">3×</option>
+              <option value="4">4× (最大)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:6px">
+          <div style="flex:1">
+            <div class="label">左 — 中心 — 右 渐变色</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <input id="c1" class="color-input" type="color" value="#dbeafe">
+              <input id="c2" class="color-input" type="color" value="#f3e8ff">
+              <input id="c3" class="color-input" type="color" value="#f8f9fa">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button id="defaultGradient" class="btn small-btn">默认渐变</button>
+              <button id="randomGradient" class="btn small-btn">随机渐变</button>
+            </div>
+          </div>
+          <div style="width:140px;text-align:right">
+            <div class="label">内边距（px）</div>
+            <input id="padInput" class="input" type="number" min="8" value="36">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button id="applySize" class="btn">应用尺寸</button>
+          <button id="downloadJpg" class="btn primary">下载 JPG（高清）</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="label">说明（要点）</div>
+          <div class="small">高质量导出通过生成 SVG 并以所选倍率绘制到 Canvas，得到无锯齿的 JPG。若需逐像素复现，请嵌入字体或导出 SVG 并将文字转路径。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const presets = [
+  // 常用比例
+  {name:'正方形 1:1', w:1080,h:1080},
+  {name:'横屏 16:9', w:1920,h:1080},
+  {name:'横屏 4:3', w:1200,h:900},
+  {name:'竖屏 3:4', w:900,h:1200},
+  {name:'竖屏 9:16', w:1080,h:1920},
+  
+  // Instagram
+  {name:'Instagram Post', w:1080,h:1080},
+  {name:'Instagram Story', w:1080,h:1920},
+  {name:'Instagram Portrait', w:1080,h:1350},
+  
+  // 小红书
+  {name:'小红书方形', w:1080,h:1080},
+  {name:'小红书竖版', w:900,h:1200},
+  {name:'小红书横版', w:1200,h:900},
+  {name:'小红书封面竖版', w:1242,h:1660},
+  
+  // 微信
+  {name:'微信公众号封面', w:900,h:383},
+  {name:'微信视频号竖版', w:1080,h:1260},
+  {name:'微信视频号横版', w:1080,h:608},
+  
+  // YouTube & 视频平台
+  {name:'YouTube Thumbnail', w:1280,h:720},
+  {name:'B站封面', w:1280,h:800},
+  {name:'抖音竖版', w:1242,h:1660},
+  
+  // Twitter/X
+  {name:'Twitter Post', w:1200,h:900},
+  {name:'Twitter Card', w:1200,h:628},
+  
+  // LinkedIn
+  {name:'LinkedIn Post', w:1200,h:627},
+  
+  // Facebook
+  {name:'Facebook Post', w:1200,h:630},
+  {name:'Facebook Story', w:1080,h:1920},
+  
+  // 其他常用
+  {name:'Pinterest Pin', w:1000,h:1500},
+  {name:'手机海报', w:1242,h:2208},
+  {name:'电商横版海报', w:1200,h:1920},
+  {name:'微博长图', w:800,h:2000},
+  {name:'Custom', w:null,h:null}
+];
+
+const presetsEl = document.getElementById('presets');
+presets.forEach((p,idx)=>{
+  const btn = document.createElement('button');
+  btn.className = 'preset';
+  btn.textContent = p.name;
+  btn.onclick = ()=> selectPreset(idx);
+  presetsEl.appendChild(btn);
+});
+
+function selectPreset(i){
+  const p = presets[i];
+  if(p.w && p.h){
+    widthInput.value = p.w; heightInput.value = p.h;
+    applySize();
+  } else {
+    widthInput.focus();
+  }
+}
+
+// dom refs
+const widthInput = document.getElementById('widthInput');
+const heightInput = document.getElementById('heightInput');
+const topLabel = document.getElementById('topLabel');
+const titleText = document.getElementById('titleText');
+const subtitleText = document.getElementById('subtitleText');
+const padInput = document.getElementById('padInput');
+const radiusInput = document.getElementById('radiusInput');
+const c1 = document.getElementById('c1');
+const c2 = document.getElementById('c2');
+const c3 = document.getElementById('c3');
+const scaleSelect = document.getElementById('scaleSelect');
+const preview = document.getElementById('preview');
+const previewTop = document.getElementById('previewTop');
+const previewTitle = document.getElementById('previewTitle');
+const previewSubtitle = document.getElementById('previewSubtitle');
+const curSize = document.getElementById('curSize');
+const downloadJpg = document.getElementById('downloadJpg');
+const applySizeBtn = document.getElementById('applySize');
+const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+const downloadPngBtn = document.getElementById('downloadPngBtn');
+const defaultGradientBtn = document.getElementById('defaultGradient');
+const randomGradientBtn = document.getElementById('randomGradient');
+
+function updatePreview(){
+  // 将颜色转换为HSL格式用于径向渐变
+  const color1Hsl = hexToHslString(c1.value);
+  const color2Hsl = hexToHslString(c2.value);
+  const color3Hsl = hexToHslString(c3.value);
+  
+  preview.style.backgroundImage = `radial-gradient(circle at 85% 20%, ${color1Hsl} 0%, transparent 40%), radial-gradient(circle at 15% 80%, ${color2Hsl} 0%, transparent 50%)`;
+  preview.style.backgroundColor = c3.value;
+  preview.style.borderRadius = radiusInput.value + 'px';
+  const pad = parseInt(padInput.value,10) || 36;
+  preview.style.padding = pad + 'px ' + (pad*1.33) + 'px';
+  previewTop.textContent = topLabel.value;
+  previewTitle.textContent = titleText.value;
+  previewSubtitle.textContent = subtitleText.value;
+  curSize.textContent = widthInput.value + ' × ' + heightInput.value + ' px';
+  
+  // 触发缩放计算
+  setTimeout(scaleCardToFit, 10);
+}
+
+// wire inputs
+[widthInput,heightInput,topLabel,titleText,subtitleText,padInput,radiusInput,c1,c2,c3].forEach(el=>el.addEventListener('input', updatePreview));
+applySizeBtn.addEventListener('click', applySize);
+
+downloadJpg.addEventListener('click', ()=> exportJpeg());
+downloadSvgBtn.addEventListener('click', ()=> downloadSVGFile());
+downloadPngBtn.addEventListener('click', ()=> exportPngSimple());
+defaultGradientBtn.addEventListener('click', ()=> setDefaultGradient());
+randomGradientBtn.addEventListener('click', ()=> setRandomGradient());
+
+function applySize(){
+  // 更新预览，缩放会在updatePreview中自动处理
+  updatePreview();
+}
+
+// initial
+applySize();
+
+// --- SVG generation ---
+function generateSVGString(w,h,opts){
+  const pad = (opts.pad||36);
+  const titleSize = Math.round(Math.max(32, w * 0.065));
+  const subtitleSize = Math.round(Math.max(18, w * 0.045));
+  const topY = 28;
+  const titleY = Math.round(h/2 - (titleSize/4));
+  const subtitleY = titleY + Math.round(titleSize*0.9);
+
+  const radius = opts.radius||22;
+  const c1 = opts.c1;
+  const c2 = opts.c2;
+  const c3 = opts.c3;
+  const topText = escapeXml(opts.top);
+  const titleText = escapeXml(opts.title);
+  const subtitleText = escapeXml(opts.subtitle);
+
+  const svg = `<?xml version="1.0" encoding="utf-8"?>
+  <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <defs>
+      <radialGradient id="grad1" cx="85%" cy="20%" r="40%">
+        <stop offset="0%" stop-color="${c1}" stop-opacity="0.7" />
+        <stop offset="100%" stop-color="${c1}" stop-opacity="0" />
+      </radialGradient>
+      <radialGradient id="grad2" cx="15%" cy="80%" r="50%">
+        <stop offset="0%" stop-color="${c2}" stop-opacity="0.6" />
+        <stop offset="100%" stop-color="${c2}" stop-opacity="0" />
+      </radialGradient>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
+        .card{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; fill:#0A1220}
+        .top{font-size:13px; font-weight:500; fill:rgba(10,18,32,0.72)}
+        .title{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; font-weight:600; font-size:${titleSize}px}
+        .subtitle{font-family:'Playfair Display', Georgia, serif; font-style:italic; font-size:${subtitleSize}px}
+      </style>
+    </defs>
+
+    <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" ry="${radius}" fill="${c3}" />
+    <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" ry="${radius}" fill="url(#grad1)" />
+    <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" ry="${radius}" fill="url(#grad2)" />
+    <g font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial" class="card">
+      <text x="${pad}" y="${topY}" class="top">${topText}</text>
+      <text x="${pad}" y="${titleY}" class="title">${titleText}</text>
+      <text x="${pad}" y="${subtitleY}" class="subtitle">${subtitleText}</text>
+    </g>
+  </svg>`;
+  return svg;
+}
+
+function escapeXml(unsafe){
+  return unsafe.replace(/[&<>"]+/g, function(c){
+    switch(c){case '&': return '&amp;'; case '<': return '&lt;'; case '>': return '&gt;'; case '"': return '&quot;';}
+  });
+}
+
+// 生成带有内嵌字体的SVG，避免外部字体加载问题
+function generateSVGStringWithEmbeddedFonts(w,h,opts){
+  const pad = (opts.pad||36);
+  const titleSize = Math.round(Math.max(32, w * 0.065));
+  const subtitleSize = Math.round(Math.max(18, w * 0.045));
+  const topY = 28;
+  const titleY = Math.round(h/2 - (titleSize/4));
+  const subtitleY = titleY + Math.round(titleSize*0.9);
+
+  const radius = opts.radius||22;
+  const c1 = opts.c1;
+  const c2 = opts.c2;
+  const c3 = opts.c3;
+  const topText = escapeXml(opts.top);
+  const titleText = escapeXml(opts.title);
+  const subtitleText = escapeXml(opts.subtitle);
+
+  const svg = `<?xml version="1.0" encoding="utf-8"?>
+  <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <defs>
+      <radialGradient id="grad1" cx="85%" cy="20%" r="40%">
+        <stop offset="0%" stop-color="${c1}" stop-opacity="0.7" />
+        <stop offset="100%" stop-color="${c1}" stop-opacity="0" />
+      </radialGradient>
+      <radialGradient id="grad2" cx="15%" cy="80%" r="50%">
+        <stop offset="0%" stop-color="${c2}" stop-opacity="0.6" />
+        <stop offset="100%" stop-color="${c2}" stop-opacity="0" />
+      </radialGradient>
+      <style>
+        .card{font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; fill:#0A1220}
+        .top{font-size:13px; font-weight:500; fill:rgba(10,18,32,0.72)}
+        .title{font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight:600; font-size:${titleSize}px}
+        .subtitle{font-family: Georgia, serif; font-style:italic; font-size:${subtitleSize}px}
+      </style>
+    </defs>
+
+    <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" ry="${radius}" fill="${c3}" />
+    <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" ry="${radius}" fill="url(#grad1)" />
+    <rect x="0" y="0" width="${w}" height="${h}" rx="${radius}" ry="${radius}" fill="url(#grad2)" />
+    <g class="card">
+      <text x="${pad}" y="${topY}" class="top">${topText}</text>
+      <text x="${pad}" y="${titleY}" class="title">${titleText}</text>
+      <text x="${pad}" y="${subtitleY}" class="subtitle">${subtitleText}</text>
+    </g>
+  </svg>`;
+  return svg;
+}
+
+// 将十六进制颜色转换为RGBA格式
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// 显示导出错误信息
+function showExportError(message) {
+  // 创建一个临时的错误提示元素
+  const errorDiv = document.createElement('div');
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff4757;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    z-index: 10000;
+    max-width: 400px;
+    line-height: 1.4;
+  `;
+  errorDiv.textContent = message;
+  
+  document.body.appendChild(errorDiv);
+  
+  // 3秒后自动移除
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.parentNode.removeChild(errorDiv);
+    }
+  }, 5000);
+  
+  // 点击关闭
+  errorDiv.addEventListener('click', () => {
+    if (errorDiv.parentNode) {
+      errorDiv.parentNode.removeChild(errorDiv);
+    }
+  });
+}
+
+async function exportJpeg(){
+  const w = parseInt(widthInput.value,10)||980;
+  const h = parseInt(heightInput.value,10)||320;
+  const scale = parseInt(scaleSelect.value,10)||2;
+  
+  // 显示加载提示
+  const originalText = downloadJpg.textContent;
+  downloadJpg.textContent = '生成中...';
+  downloadJpg.disabled = true;
+  
+  try {
+    // 等待字体加载完成
+    await document.fonts.ready;
+    
+    // 使用内嵌字体的SVG，避免外部字体加载问题
+    const svg = generateSVGStringWithEmbeddedFonts(w, h, {
+      pad: parseInt(padInput.value,10)||36,
+      radius: parseInt(radiusInput.value,10)||22,
+      c1: c1.value, c2: c2.value, c3: c3.value,
+      top: topLabel.value, title: titleText.value, subtitle: subtitleText.value
+    });
+
+    const svgBlob = new Blob([svg], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    
+    // 设置超时处理
+    const timeoutId = setTimeout(() => {
+      URL.revokeObjectURL(url);
+      downloadJpg.textContent = originalText;
+      downloadJpg.disabled = false;
+      showExportError('导出超时，请尝试降低导出倍数或使用 SVG 导出');
+    }, 10000);
+
+    img.onload = ()=>{
+      clearTimeout(timeoutId);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, w * scale);
+        canvas.height = Math.max(1, h * scale);
+        const ctx = canvas.getContext('2d');
+        
+        // 填充白色背景
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        
+        // 绘制图像
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // 导出为JPEG
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        downloadDataUrl(dataUrl, `cover_${w}x${h}@${scale}x.jpg`);
+        
+        downloadJpg.textContent = originalText;
+        downloadJpg.disabled = false;
+      } catch (error) {
+        downloadJpg.textContent = originalText;
+        downloadJpg.disabled = false;
+        showExportError('画布渲染失败，请尝试降低导出倍数');
+      }
+      URL.revokeObjectURL(url);
+    };
+    
+    img.onerror = (e)=>{
+      clearTimeout(timeoutId);
+      URL.revokeObjectURL(url);
+      downloadJpg.textContent = originalText;
+      downloadJpg.disabled = false;
+      showExportError('SVG 渲染失败，建议使用 SVG 导出或降低导出倍数');
+    };
+    
+    img.src = url;
+    
+  } catch (error) {
+    downloadJpg.textContent = originalText;
+    downloadJpg.disabled = false;
+    showExportError('字体加载失败，请检查网络连接或使用 SVG 导出');
+  }
+}
+
+function downloadDataUrl(dataUrl, filename){
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function downloadSVGFile(){
+  const w = parseInt(widthInput.value,10)||980;
+  const h = parseInt(heightInput.value,10)||320;
+  
+  // 显示加载提示
+  const originalText = downloadSvgBtn.textContent;
+  downloadSvgBtn.textContent = '生成中...';
+  downloadSvgBtn.disabled = true;
+  
+  try {
+    const svg = generateSVGStringWithEmbeddedFonts(w,h,{
+      pad: parseInt(padInput.value,10)||36,
+      radius: parseInt(radiusInput.value,10)||22,
+      c1: c1.value, c2: c2.value, c3: c3.value,
+      top: topLabel.value, title: titleText.value, subtitle: subtitleText.value
+    });
+    
+    const blob = new Blob([svg], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    downloadDataUrl(url, `cover_${w}x${h}.svg`);
+    
+    setTimeout(()=> {
+      URL.revokeObjectURL(url);
+      downloadSvgBtn.textContent = originalText;
+      downloadSvgBtn.disabled = false;
+    }, 1000);
+    
+  } catch (error) {
+    downloadSvgBtn.textContent = originalText;
+    downloadSvgBtn.disabled = false;
+    showExportError('SVG 生成失败，请检查输入内容');
+  }
+}
+
+// 使用画布直接绘制的PNG导出方法
+function exportPngSimple(){
+  const w = parseInt(widthInput.value,10)||980;
+  const h = parseInt(heightInput.value,10)||320;
+  
+  // 显示加载提示
+  const originalText = downloadPngBtn.textContent;
+  downloadPngBtn.textContent = '生成中...';
+  downloadPngBtn.disabled = true;
+  
+  try {
+    // 使用Canvas直接绘制，避免SVG foreignObject的兼容性问题
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    
+    // 绘制背景
+    const radius = parseInt(radiusInput.value,10)||22;
+    const pad = parseInt(padInput.value,10)||36;
+    
+    // 创建圆角矩形路径（兼容性处理）
+     ctx.beginPath();
+     if (ctx.roundRect) {
+       ctx.roundRect(0, 0, w, h, radius);
+     } else {
+       // 手动绘制圆角矩形（兼容旧浏览器）
+       ctx.moveTo(radius, 0);
+       ctx.lineTo(w - radius, 0);
+       ctx.quadraticCurveTo(w, 0, w, radius);
+       ctx.lineTo(w, h - radius);
+       ctx.quadraticCurveTo(w, h, w - radius, h);
+       ctx.lineTo(radius, h);
+       ctx.quadraticCurveTo(0, h, 0, h - radius);
+       ctx.lineTo(0, radius);
+       ctx.quadraticCurveTo(0, 0, radius, 0);
+       ctx.closePath();
+     }     ctx.clip();
+    
+    // 填充背景色
+    ctx.fillStyle = c3.value;
+    ctx.fillRect(0, 0, w, h);
+    
+    // 创建径向渐变
+    const grad1 = ctx.createRadialGradient(w * 0.85, h * 0.2, 0, w * 0.85, h * 0.2, w * 0.4);
+    grad1.addColorStop(0, hexToRgba(c1.value, 0.7));
+    grad1.addColorStop(1, hexToRgba(c1.value, 0));
+    
+    const grad2 = ctx.createRadialGradient(w * 0.15, h * 0.8, 0, w * 0.15, h * 0.8, w * 0.5);
+    grad2.addColorStop(0, hexToRgba(c2.value, 0.6));
+    grad2.addColorStop(1, hexToRgba(c2.value, 0));
+    
+    // 应用渐变
+    ctx.fillStyle = grad1;
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = grad2;
+    ctx.fillRect(0, 0, w, h);
+    
+    // 绘制文本
+    ctx.fillStyle = '#0A1220';
+    
+    // 顶部标签
+    ctx.font = '500 13px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(10,18,32,0.72)';
+    ctx.fillText(topLabel.value, pad, 28);
+    
+    // 标题
+    const titleSize = Math.max(32, w * 0.065);
+    ctx.font = `600 ${titleSize}px Inter, system-ui, -apple-system, sans-serif`;
+    ctx.fillStyle = '#0A1220';
+    const titleY = h/2 - (titleSize/4);
+    ctx.fillText(titleText.value, pad, titleY);
+    
+    // 副标题
+    const subtitleSize = Math.max(18, w * 0.045);
+    ctx.font = `italic ${subtitleSize}px 'Playfair Display', Georgia, serif`;
+    const subtitleY = titleY + titleSize * 0.9;
+    ctx.fillText(subtitleText.value, pad, subtitleY);
+    
+    // 导出PNG
+    const dataUrl = canvas.toDataURL('image/png');
+    downloadDataUrl(dataUrl, `cover_${w}x${h}.png`);
+    
+    downloadPngBtn.textContent = originalText;
+    downloadPngBtn.disabled = false;
+    
+  } catch (error) {
+    downloadPngBtn.textContent = originalText;
+    downloadPngBtn.disabled = false;
+    showExportError('PNG 导出失败，请尝试使用 SVG 导出');
+  }
+}
+
+// 设置默认渐变
+function setDefaultGradient(){
+  c1.value = '#dbeafe'; // 浅蓝色
+  c2.value = '#f3e8ff'; // 浅紫色
+  c3.value = '#f8f9fa'; // 浅灰色背景
+  updatePreview();
+}
+
+// 生成随机渐变
+function setRandomGradient(){
+  // 预定义的美观色彩组合
+  const gradientSets = [
+    ['#FFE5E5', '#FFB3BA', '#FFDFBA'],
+    ['#E5F3FF', '#B3D9FF', '#FFE5B3'],
+    ['#F0E5FF', '#D9B3FF', '#E5FFB3'],
+    ['#FFE5F0', '#FFB3D9', '#B3FFE5'],
+    ['#E5FFE5', '#B3FFB3', '#FFE5FF'],
+    ['#FFF0E5', '#FFDFB3', '#E5F0FF'],
+    ['#E5F0E5', '#B3DFB3', '#F0E5F0'],
+    ['#FFE5DF', '#FFB3A7', '#DFE5FF'],
+    ['#F5E5FF', '#E5B3FF', '#E5FFE5'],
+    ['#E5FFF5', '#B3FFD9', '#FFE5F5']
+  ];
+  
+  // 随机选择一个渐变组合
+  const randomSet = gradientSets[Math.floor(Math.random() * gradientSets.length)];
+  
+  // 随机调整亮度和饱和度
+  const adjustedColors = randomSet.map(color => {
+    const hsl = hexToHsl(color);
+    // 轻微调整亮度和饱和度
+    hsl[1] = Math.max(0.2, Math.min(0.8, hsl[1] + (Math.random() - 0.5) * 0.3));
+    hsl[2] = Math.max(0.7, Math.min(0.95, hsl[2] + (Math.random() - 0.5) * 0.2));
+    return hslToHex(hsl[0], hsl[1], hsl[2]);
+  });
+  
+  c1.value = adjustedColors[0];
+  c2.value = adjustedColors[1];
+  c3.value = adjustedColors[2];
+  updatePreview();
+}
+
+// 颜色转换为HSL字符串（用于CSS）
+function hexToHslString(hex) {
+  const hsl = hexToHsl(hex);
+  const h = Math.round(hsl[0] * 360);
+  const s = Math.round(hsl[1] * 100);
+  const l = Math.round(hsl[2] * 100);
+  return `hsla(${h}, ${s}%, ${l}%, 0.7)`;
+}
+
+// 颜色转换辅助函数
+function hexToHsl(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  
+  return [h, s, l];
+}
+
+function hslToHex(h, s, l) {
+  const hue2rgb = (p, q, t) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+  
+  let r, g, b;
+  
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  
+  const toHex = (c) => {
+    const hex = Math.round(c * 255).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+// 动态缩放卡片以适应容器
+function scaleCardToFit() {
+  const preview = document.getElementById('preview');
+  const stage = document.querySelector('.preview-stage');
+  
+  if (!preview || !stage) return;
+  
+  // 获取容器的可用尺寸
+  const stageRect = stage.getBoundingClientRect();
+  const availableWidth = stageRect.width - 32; // 减去padding
+  const availableHeight = stageRect.height - 32;
+  
+  // 获取卡片的原始尺寸
+  const cardWidth = parseInt(widthInput.value) || 980;
+  const cardHeight = parseInt(heightInput.value) || 320;
+  
+  // 计算缩放比例
+  const scaleX = availableWidth / cardWidth;
+  const scaleY = availableHeight / cardHeight;
+  const scale = Math.min(scaleX, scaleY, 1); // 不放大，只缩小
+  
+  // 应用缩放
+  const scaledWidth = cardWidth * scale;
+  const scaledHeight = cardHeight * scale;
+  
+  preview.style.width = scaledWidth + 'px';
+  preview.style.height = scaledHeight + 'px';
+  preview.style.transform = 'none'; // 清除之前的transform
+  
+  // 确保卡片居中显示
+  preview.style.margin = 'auto';
+}
+
+// 监听窗口大小变化
+window.addEventListener('resize', () => {
+  setTimeout(scaleCardToFit, 100); // 延迟执行以确保布局完成
+});
+
+// 监听输入框变化，重新计算缩放
+widthInput.addEventListener('input', () => {
+  setTimeout(scaleCardToFit, 50);
+});
+
+heightInput.addEventListener('input', () => {
+  setTimeout(scaleCardToFit, 50);
+});
+
+// helper: apply initial settings
+updatePreview();
+
+// 初始化缩放
+setTimeout(() => {
+  scaleCardToFit();
+}, 100);
+
+</script>
+</body>
+</html>
