@@ -454,7 +454,12 @@ function onDrag(e) {
   }
 }
 
-saveState();
+function endDrag() {
+  isDragging = false;
+  currentDragId = null;
+  window.removeEventListener('mousemove', onDrag);
+  window.removeEventListener('mouseup', endDrag);
+  saveState();
 }
 
 // --- Inline Edit ---

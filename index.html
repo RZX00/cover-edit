@@ -53,22 +53,27 @@
                         </div>
                     </div>
 
-                    <div class="controls-grid" style="margin-top:8px">
+                    <!-- Modified Layout for Font Properties -->
+                    <div style="margin-top:8px">
+                        <div class="label">Font</div>
+                        <div id="propFont" class="font-picker-trigger input" tabindex="0">
+                            <span>Select Font</span>
+                            <div id="fontDropdown" class="font-dropdown" style="display:none;">
+                                <!-- Dynamic options -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-grid" style="margin-top:12px">
                         <div>
-                            <div class="label">Font</div>
-                            <select id="propFont" class="input">
-                                <option value="Inter, sans-serif">Inter</option>
-                                <option value="'Playfair Display', serif">Playfair Display</option>
-                                <option value="'Roboto', sans-serif">Roboto</option>
-                                <option value="'Lato', sans-serif">Lato</option>
-                                <option value="'Montserrat', sans-serif">Montserrat</option>
-                                <option value="'Oswald', sans-serif">Oswald</option>
-                                <option value="'Merriweather', serif">Merriweather</option>
-                                <option value="'Dancing Script', cursive">Dancing Script</option>
-                                <option value="'Lobster', cursive">Lobster</option>
-                                <option value="'Pacifico', cursive">Pacifico</option>
-                                <option value="monospace">Monospace</option>
-                                <option value="system-ui, sans-serif">System UI</option>
+                            <div class="label">Weight</div>
+                            <select id="propWeight" class="input">
+                                <option value="300">Light</option>
+                                <option value="400">Regular</option>
+                                <option value="500">Medium</option>
+                                <option value="600">Semi Bold</option>
+                                <option value="700">Bold</option>
+                                <option value="800">Extra Bold</option>
                             </select>
                         </div>
                         <div>
@@ -79,18 +84,6 @@
                             </select>
                         </div>
                     </div>
-
-                    <div style="margin-top:8px">
-                        <div class="label">Weight</div>
-                        <select id="propWeight" class="input">
-                            <option value="300">Light</option>
-                            <option value="400">Regular</option>
-                            <option value="500">Medium</option>
-                            <option value="600">SemiBold</option>
-                            <option value="700">Bold</option>
-                        </select>
-                    </div>
-
                     <button id="btnDeleteText" class="btn small-btn"
                         style="width:100%; margin-top:12px; color:#ef4444; border-color:rgba(239, 68, 68, 0.3)">Delete
                         Layer</button>
@@ -144,13 +137,7 @@
                 <div>
                     <div class="label">Layout Presets</div>
                     <div id="presetsCommon" class="presets-group"></div>
-
-                    <div class="preset-toggle" id="toggleMorePresets">
-                        Show More Presets <span>▼</span>
-                    </div>
-                    <div id="morePresetsContainer" style="display:none; margin-top:8px">
-                        <div id="presetsMore" class="presets-group"></div>
-                    </div>
+                    <!-- Unified presets list, no more toggle -->
                 </div>
 
                 <!-- Section: Dimensions -->
@@ -193,7 +180,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 
 </html>

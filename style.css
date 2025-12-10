@@ -502,3 +502,75 @@ select:focus {
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
+
+/* Font Picker */
+.font-picker-trigger {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.2);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #334155;
+  min-height: 38px;
+  /* Ensure visibility */
+}
+
+.font-picker-trigger:hover {
+  background: white;
+  border-color: #BFC7FF;
+}
+
+.font-picker-trigger::after {
+  content: '▼';
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.font-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  /* Ensure on top */
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 4px;
+  padding: 4px 0;
+}
+
+.font-option {
+  padding: 10px 12px;
+  /* Equal spacing */
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  height: 40px;
+  /* Fixed height for consistency */
+}
+
+.font-option:last-child {
+  border-bottom: none;
+}
+
+.font-option:hover {
+  background: #EFF1FF;
+  color: #0c1630;
+}
+
+.font-option.selected {
+  background: #EFF1FF;
+  color: #0c1630;
+  font-weight: 600;
+}
