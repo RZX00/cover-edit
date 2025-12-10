@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cover Editor — Pro</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Inter:wght@300..900&family=Lato:wght@300..900&family=Lobster&family=Merriweather:wght@300..900&family=Montserrat:wght@100..900&family=Oswald:wght@200..700&family=Pacifico&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto:wght@100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- LEFT PANEL: Text & Layers & Background -->
+        <div class="card-panel">
+            <div class="header">
+                <div class="logo">C</div>
+                <div>
+                    <div class="title">Cover Editor</div>
+                    <div class="small">Studio Edition</div>
+                </div>
+            </div>
+
+            <div class="controls controls-scroll">
+                <!-- TEXT LAYERS SECTION -->
+                <div class="row" style="justify-content:space-between; margin-bottom:8px">
+                    <div class="label">Text Layers</div>
+                    <button id="btnAddText" class="btn small-btn">+ Add Text</button>
+                </div>
+
+                <div id="layersList" class="layers-list">
+                    <!-- Dynamic Layers -->
+                </div>
+
+                <!-- Selected Layer Properties -->
+                <div id="propsPanel" class="props-panel"
+                    style="display:none; margin-top:12px; padding:12px; background:rgba(255,255,255,0.5); border-radius:8px; border:1px solid rgba(0,0,0,0.05)">
+                    <div class="label">Edit Text</div>
+                    <textarea id="propText" class="input" rows="2" style="margin-bottom:8px"></textarea>
+
+                    <div class="controls-grid">
+                        <div>
+                            <div class="label">Size</div>
+                            <input id="propSize" type="number" class="input">
+                        </div>
+                        <div>
+                            <div class="label">Color</div>
+                            <div style="display:flex; gap:4px">
+                                <input id="propColor" type="color" class="color-input" style="width:100%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-grid" style="margin-top:8px">
+                        <div>
+                            <div class="label">Font</div>
+                            <select id="propFont" class="input">
+                                <option value="Inter, sans-serif">Inter</option>
+                                <option value="'Playfair Display', serif">Playfair Display</option>
+                                <option value="'Roboto', sans-serif">Roboto</option>
+                                <option value="'Lato', sans-serif">Lato</option>
+                                <option value="'Montserrat', sans-serif">Montserrat</option>
+                                <option value="'Oswald', sans-serif">Oswald</option>
+                                <option value="'Merriweather', serif">Merriweather</option>
+                                <option value="'Dancing Script', cursive">Dancing Script</option>
+                                <option value="'Lobster', cursive">Lobster</option>
+                                <option value="'Pacifico', cursive">Pacifico</option>
+                                <option value="monospace">Monospace</option>
+                                <option value="system-ui, sans-serif">System UI</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="label">Style</div>
+                            <select id="propStyle" class="input">
+                                <option value="normal">Normal</option>
+                                <option value="italic">Italic</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:8px">
+                        <div class="label">Weight</div>
+                        <select id="propWeight" class="input">
+                            <option value="300">Light</option>
+                            <option value="400">Regular</option>
+                            <option value="500">Medium</option>
+                            <option value="600">SemiBold</option>
+                            <option value="700">Bold</option>
+                        </select>
+                    </div>
+
+                    <button id="btnDeleteText" class="btn small-btn"
+                        style="width:100%; margin-top:12px; color:#ef4444; border-color:rgba(239, 68, 68, 0.3)">Delete
+                        Layer</button>
+                </div>
+
+                <hr style="border:none; border-top:1px solid rgba(0,0,0,0.05); width:100%; margin:16px 0">
+
+                <!-- STYLE SECTION -->
+                <div>
+                    <div class="label">Background Gradient</div>
+                    <div class="row" style="margin-bottom:8px">
+                        <input id="c1" class="color-input" type="color" value="#dbeafe" title="Left Gradient">
+                        <input id="c2" class="color-input" type="color" value="#f3e8ff" title="Right Gradient">
+                        <input id="c3" class="color-input" type="color" value="#f8f9fa" title="Base Color">
+                        <button id="randomGradient" class="btn small-btn">🎲 Random</button>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+                        <div class="label" style="margin:0">Presets</div>
+                        <button id="btnSaveBg" class="btn small-btn" style="padding:2px 8px; font-size:11px">+ Save
+                            Current</button>
+                    </div>
+                    <div id="bgPresets" style="display:flex; gap:6px; flex-wrap:wrap">
+                        <!-- BG Presets -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CENTER: Preview -->
+        <div class="card-panel preview-wrap">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <div class="label" style="font-size:14px">Canvas Preview</div>
+                <div class="notice">Size: <span id="curSize">980 × 320 px</span></div>
+            </div>
+
+            <div class="preview-stage">
+                <div id="preview" class="card-preview">
+                    <div id="textLayerContainer" style="position:absolute; inset:0; pointer-events:none">
+                        <!-- Dynamic texts render here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Layout & Export -->
+        <div class="card-panel">
+            <div class="controls controls-scroll">
+                <!-- Section: Layout -->
+                <div>
+                    <div class="label">Layout Presets</div>
+                    <div id="presetsCommon" class="presets-group"></div>
+
+                    <div class="preset-toggle" id="toggleMorePresets">
+                        Show More Presets <span>▼</span>
+                    </div>
+                    <div id="morePresetsContainer" style="display:none; margin-top:8px">
+                        <div id="presetsMore" class="presets-group"></div>
+                    </div>
+                </div>
+
+                <!-- Section: Dimensions -->
+                <div class="controls-grid" style="margin-top:16px">
+                    <div>
+                        <div class="label">Width</div>
+                        <input id="widthInput" class="input" type="number" value="980">
+                    </div>
+                    <div>
+                        <div class="label">Height</div>
+                        <input id="heightInput" class="input" type="number" value="320">
+                    </div>
+                </div>
+                <button id="applySize" class="btn" style="width:100%; justify-content:center; margin-top:8px">Apply
+                    Custom Size</button>
+
+                <hr style="border:none; border-top:1px solid rgba(0,0,0,0.05); width:100%; margin:16px 0">
+
+                <div class="row">
+                    <div style="flex:1">
+                        <div class="label">Padding</div>
+                        <input id="padInput" class="input" type="number" value="36">
+                    </div>
+                    <div style="flex:1">
+                        <div class="label">Radius</div>
+                        <input id="radiusInput" type="range" min="0" max="80" value="22" class="slider">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer: Export -->
+            <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(0,0,0,0.05)">
+                <div class="label">Export</div>
+                <div style="display:flex; gap:8px">
+                    <button id="downloadJpg" class="btn primary" style="flex:1">Download JPG</button>
+                    <button id="downloadPng" class="btn" style="flex:1">PNG</button>
+                    <button id="downloadSvg" class="btn">SVG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
