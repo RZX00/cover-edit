@@ -138,3 +138,25 @@ export function saveState(els) {
     }
     localStorage.setItem('coverEditorState', JSON.stringify(state));
 }
+export const imagePresets = [
+    {
+        name: 'MacBook',
+        src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgODAiPjxyZWN0IHg9IjEyIiB5PSIxMCIgd2lkdGg9Ijc2IiBoZWlnaHQ9IjQ4IiByeD0iMyIgZmlsbD0iI2Y4ZmFmYyIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjEuNSIvPjxwYXRoIGQ9Ik04IDYyaDg0bC00IDhIMTJ6IiBmaWxsPSIjZTJlOGYwIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+'
+    },
+    {
+        name: 'iPhone',
+        src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCAxMDAiPjxyZWN0IHg9IjE1IiB5PSI1IiB3aWR0aD0iMzAiIGhlaWdodD0iOTAiIHJ4PSI0IiBmaWxsPSIjZmZmIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHJlY3QgeD0iMjUiIHk9IjciIHdpZHRoPSIxMCIgaGVpZ2h0PSIyIiByeD0iMSIgZmlsbD0iIzQ3NTU2OSIvPjwvc3ZnPg=='
+    },
+    {
+        name: 'Open Book',
+        src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgODAiPjxwYXRoIGQ9Ik0xMCA2MCBDMzAgNjAgNTAgNzUgNTAgNzUgQzUwIDc1IDcwIDYwIDkwIDYwIFYgMjAgQzcwIDIwIDUwIDM1IDUwIDM1IEM1MCAzNSAzMCAyMCAxMCAyMCBaIiBmaWxsPSIjZjhmYWZjIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwIDc1IFYgMzUiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+'
+    },
+    {
+        name: 'Notebook',
+        src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCAxMDAiPjxyZWN0IHg9IjE1IiB5PSI1IiB3aWR0aD0iNTAiIGhlaWdodD0iOTAiIHJ4PSIyIiBmaWxsPSIjZmZmIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHBhdGggZD0iTTE1IDEwIEg2NSIgc3Ryb2tlPSIjZTJlOGYwIiBzdHJva2Utd2lkdGg9IjEiLz48cGF0aCBkPSJNMTUgMTAgVjk1IiBmaWxsPSJub25lIi8+PHJlY3QgeD0iMTIiIHk9IjE1IiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iNTAlIiBmaWxsPSIjOTRhM2I4Ii8+PHJlY3QgeD0iMTIiIHk9IjM1IiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iNTAlIiBmaWxsPSIjOTRhM2I4Ii8+PHJlY3QgeD0iMTIiIHk9IjU1IiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iNTAlIiBmaWxsPSIjOTRhM2I4Ii8+PHJlY3QgeD0iMTIiIHk9Ijc1IiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iNTAlIiBmaWxsPSIjOTRhM2I4Ii8+PC9zdmc+'
+    },
+    {
+        name: 'Coffee Cup',
+        src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNMzAgMzAgSCA3MCBDNzAgNjAgNjAgODAgNTAgODAgQzQwIDgwIDMwIDYwIDMwIDMwIFoiIGZpbGw9IndoaXRlIiBzdHJva2U9IiM5NGEzYjgiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHBhdGggZD0iTTcwIDM1IEg3NSBDODAgMzUgODAgNTUgNzAgNTUiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiLz48L3N2Zz4='
+    }
+];

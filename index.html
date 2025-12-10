@@ -73,21 +73,21 @@
                     <div class="controls-grid" style="margin-top:12px">
                         <div>
                             <div class="label">Weight</div>
-                            <select id="propWeight" class="input">
-                                <option value="300">Light</option>
-                                <option value="400">Regular</option>
-                                <option value="500">Medium</option>
-                                <option value="600">Semi Bold</option>
-                                <option value="700">Bold</option>
-                                <option value="800">Extra Bold</option>
-                            </select>
+                            <div class="btn-group" id="weightGroup">
+                                <button class="btn-toggle" data-val="300" title="Light">L</button>
+                                <button class="btn-toggle selected" data-val="400" title="Regular">R</button>
+                                <button class="btn-toggle" data-val="600" title="SemiBold">S</button>
+                                <button class="btn-toggle" data-val="700" title="Bold">B</button>
+                            </div>
+                            <input type="hidden" id="propWeight" value="400">
                         </div>
                         <div>
                             <div class="label">Style</div>
-                            <select id="propStyle" class="input">
-                                <option value="normal">Normal</option>
-                                <option value="italic">Italic</option>
-                            </select>
+                            <div class="btn-group" id="styleGroup">
+                                <button class="btn-toggle selected" data-val="normal">N</button>
+                                <button class="btn-toggle" data-val="italic" style="font-style:italic">I</button>
+                            </div>
+                            <input type="hidden" id="propStyle" value="normal">
                         </div>
                     </div>
                     <button id="btnDeleteText" class="btn small-btn"
@@ -103,6 +103,14 @@
                         <input type="file" id="imgUpload" accept="image/*" style="display:none">
                     </label>
                 </div>
+                <!-- Sticker Presets -->
+                <div style="margin-top:12px">
+                    <div class="label" style="font-size:11px; color:#94a3b8; margin-bottom:4px">Stickers</div>
+                    <div id="stickerPresets" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
                 <!-- Reuse layers list style or create new container if needed, but for now we put images directly on canvas -->
                 <div id="imageLayersList" class="layers-list" style="margin-top:8px; display:none;">
                     <!-- populated if we want to list them -->

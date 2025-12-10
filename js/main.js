@@ -1,4 +1,4 @@
-import { state, loadState, saveState, presets, defaultBgPresets, availableFonts, styleTemplates, defaultTexts } from './store.js';
+import { state, loadState, saveState, presets, defaultBgPresets, availableFonts, styleTemplates, defaultTexts, imagePresets } from './store.js';
 import { setRandomGradient } from './utils.js';
 import { renderTextLayers, renderLayersList, updatePreview, scaleCardToFit } from './renderer.js';
 import { exportPngSimple, downloadSVGFile } from './export.js';
@@ -68,6 +68,7 @@ function init() {
     renderLayersList(els, selectText);
     renderBgPresets();
     renderStyleTemplates(); // New
+    renderStickerPresets(); // New
     setupFontPicker(); // Init Font Picker
     updatePreview(els);
 
@@ -96,6 +97,30 @@ function setupListeners() {
     // Text Property Listeners
     const textProps = [els.propText, els.propSize, els.propColor, els.propFont, els.propWeight, els.propStyle];
     textProps.forEach(el => el && el.addEventListener('input', updateTextFromProps));
+
+    // Button Group Logic
+    const bindBtnGroup = (groupId, inputId) => {
+        const group = document.getElementById(groupId);
+        const input = document.getElementById(inputId);
+        if (!group || !input) return;
+
+        group.querySelectorAll('.btn-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update UI
+                group.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+
+                // Update value
+                input.value = btn.dataset.val;
+
+                // Trigger update
+                updateTextFromProps();
+            });
+        });
+    };
+
+    bindBtnGroup('weightGroup', 'propWeight');
+    bindBtnGroup('styleGroup', 'propStyle');
 
     els.btnAddText.addEventListener('click', addTextLayer);
     els.btnDeleteText.addEventListener('click', deleteSelectedText);
@@ -289,24 +314,32 @@ function renderBgPresets() {
     state.bgPresets.forEach((p, idx) => {
         const btn = document.createElement('div');
         btn.className = 'color-preset';
-        btn.style.background = `linear - gradient(135deg, ${p.c1}, ${p.c3})`;
+        btn.style.background = `linear-gradient(135deg, ${p.c1}, ${p.c2}, ${p.c3})`;
         btn.title = p.name;
+
+        // Apply Preset on Click
         btn.onclick = () => {
             els.c1.value = p.c1;
             els.c2.value = p.c2;
             els.c3.value = p.c3;
+            // Also update state immediate? Or just preview
+            // Let's rely on listeners or manual trigger
             updatePreview(els);
         };
 
-        if (idx > 2) {
+        // Delete Button for Custom Presets (indices > 2 assume defaults are 0,1,2)
+        // Adjust logic if defaultBgPresets length changes
+        if (idx >= defaultBgPresets.length) {
             const del = document.createElement('span');
             del.textContent = '×';
-            del.style.cssText = 'position:absolute; top:-4px; right:-4px; background:red; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer;';
+            del.className = 'preset-delete'; // Use CSS class for hover effect
             del.onclick = (e) => {
                 e.stopPropagation();
-                state.bgPresets.splice(idx, 1);
-                renderBgPresets();
-                saveState(els);
+                if (confirm('Delete this preset?')) {
+                    state.bgPresets.splice(idx, 1);
+                    renderBgPresets();
+                    saveState(els);
+                }
             };
             btn.appendChild(del);
         }
@@ -440,6 +473,38 @@ function setupFontPicker() {
 
 
 
+function renderStickerPresets() {
+    const container = document.getElementById('stickerPresets');
+    if (!container) return;
+
+    container.innerHTML = '';
+    imagePresets.forEach(img => {
+        const btn = document.createElement('div');
+        btn.style.width = '100%';
+        btn.style.aspectRatio = '1/1';
+        btn.style.background = 'white';
+        btn.style.border = '1px solid rgba(0,0,0,0.1)';
+        btn.style.borderRadius = '6px';
+        btn.style.cursor = 'pointer';
+        btn.style.backgroundImage = `url('${img.src}')`;
+        btn.style.backgroundSize = 'contain';
+        btn.style.backgroundRepeat = 'no-repeat';
+        btn.style.backgroundPosition = 'center';
+        btn.style.transition = 'transform 0.1s';
+
+        btn.title = img.name;
+
+        btn.addEventListener('mouseenter', () => btn.style.transform = 'scale(1.05)');
+        btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1)');
+
+        btn.onclick = () => {
+            addImageLayer(img.src);
+        };
+
+        container.appendChild(btn);
+    });
+}
+
 function renderStyleTemplates() {
     const container = document.getElementById('styleTemplates');
     if (!container) return;
@@ -453,10 +518,19 @@ function renderStyleTemplates() {
         btn.style.display = 'flex';
         btn.style.alignItems = 'center';
         btn.style.justifyContent = 'center';
-        btn.style.background = `linear - gradient(135deg, ${tmpl.c1}, ${tmpl.c3})`;
-        // If background is dark, text white, else black
-        // Simple heuristic
-        btn.style.color = tmpl.c1.startsWith('#0') || tmpl.c1.startsWith('#1') ? 'white' : 'black';
+        btn.style.justifyContent = 'center';
+        // Use 3-stop gradient for accuracy
+        btn.style.background = `linear-gradient(135deg, ${tmpl.c1}, ${tmpl.c2}, ${tmpl.c3})`;
+
+        // Text color heuristic: if c2 (middle) is dark, use white
+        const isDark = (color) => {
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            return ((r * 299) + (g * 587) + (b * 114)) / 1000 < 128;
+        };
+        btn.style.color = isDark(tmpl.c2 || tmpl.c1) ? 'white' : 'black';
         btn.style.border = '1px solid rgba(0,0,0,0.1)';
         btn.textContent = tmpl.name;
 
@@ -486,6 +560,29 @@ function applyStyleTemplate(tmpl) {
             if (style) {
                 if (style.font) t.fontFamily = style.font;
                 if (style.weight) t.fontWeight = style.weight;
+                if (els.propWeight) {
+                    els.propWeight.value = t.fontWeight;
+                    // Update buttons
+                    const grp = document.getElementById('weightGroup');
+                    if (grp) {
+                        grp.querySelectorAll('.btn-toggle').forEach(b => {
+                            if (b.dataset.val == t.fontWeight) b.classList.add('selected');
+                            else b.classList.remove('selected');
+                        });
+                    }
+                }
+                if (style.style) t.fontStyle = style.style; // Assuming 'style' property for fontStyle
+                if (els.propStyle) {
+                    els.propStyle.value = t.fontStyle;
+                    // Update buttons
+                    const grp = document.getElementById('styleGroup');
+                    if (grp) {
+                        grp.querySelectorAll('.btn-toggle').forEach(b => {
+                            if (b.dataset.val == t.fontStyle) b.classList.add('selected');
+                            else b.classList.remove('selected');
+                        });
+                    }
+                }
                 if (style.color) t.color = style.color;
             }
         });
