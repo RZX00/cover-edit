@@ -1,3 +1,5 @@
+> **已归档（2026-10）**：本项目已由 [signal-cover-studio](https://github.com/RZX00/signal-cover-studio) 取代，不再更新。
+
 # Cover Artist
 
 A lightweight, browser-based cover image editor for social media.
